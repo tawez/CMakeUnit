@@ -1,7 +1,8 @@
-macro(set_cmake_test_name variable test)
+function(set_cmake_test_name variable test)
     cmake_path(GET CMAKE_CURRENT_SOURCE_DIR STEM suite)
-    set(${variable} "${suite}::${test}" ${ARGN})
-endmacro()
+    string(REPLACE "/" "::" test "${test}")
+    set(${variable} "${suite}::${test}" PARENT_SCOPE)
+endfunction()
 
 
 function(add_cmake_test test)
@@ -46,3 +47,73 @@ macro(add_cmakeunit_target name)
         ${ARGN}
     )
 endmacro()
+
+
+# {{{ Assertions
+macro(FAIL)
+    if ("${ARGN}" STREQUAL "")
+        message(SEND_ERROR "Failed")
+    else ()
+        message(SEND_ERROR "${ARGN}")
+    endif ()
+endmacro()
+
+
+macro(EXPECT_TRUE value)
+    block(SCOPE_FOR POLICIES)
+        cmake_policy(SET CMP0012 NEW)
+        if (NOT ${value})
+            message(SEND_ERROR "'${value}' is expected to be 'true'")
+        endif ()
+    endblock()
+endmacro()
+
+macro(EXPECT_FALSE value)
+    block(SCOPE_FOR POLICIES)
+        cmake_policy(SET CMP0012 NEW)
+        if (${value})
+            message(SEND_ERROR "'${value} is expected to be 'false'")
+        endif ()
+    endblock()
+endmacro()
+
+
+macro(EXPECT_DEFINED variable)
+    if (NOT DEFINED ${variable})
+        message(SEND_ERROR "${variable} is expected to be defined")
+    endif ()
+endmacro()
+
+macro(EXPECT_NOT_DEFINED variable)
+    if (DEFINED ${variable})
+        message(SEND_ERROR "${variable} is expected not to be defined")
+    endif ()
+endmacro()
+
+macro(EXPECT_STREQ value expected)
+    if (NOT "${value}" STREQUAL "${expected}")
+        message(SEND_ERROR "'${variable}' is expected to be '${expected}'")
+    endif ()
+endmacro()
+
+macro(EXPECT_NOT_STREQ value expected)
+    if ("${value}" STREQUAL "${expected}")
+        message(SEND_ERROR "'${variable}' is expected not to be '${expected}'")
+    endif ()
+endmacro()
+
+
+macro(EXPECT_MATCH value regexp)
+    if (NOT "${value}" MATCHES "${regexp}")
+        message(SEND_ERROR "'${value}' is expected to match '${regexp}'")
+    endif ()
+endmacro()
+
+
+macro(EXPECT_NOT_MATCH value regexp)
+    if ("${value}" MATCHES "${regexp}")
+        message(SEND_ERROR "'${value}' is expected not to match '${regexp}'")
+    endif ()
+endmacro()
+
+# }}} Assertions
