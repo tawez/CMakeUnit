@@ -112,6 +112,123 @@ The test will fail if it returns a value other than `0`.
 
 TBD
 
+  **Example**
+
+  ```cmake
+  add_cmake_test(foo
+      "-DVAR1=someValue"
+  )
+  ```
+  `VAR1` will be defined in the test. It's value will be set to `someValue`.
+
+
+
+> **TIP**
+> 
+> Prepend `add_cmake_test` with `x` if you want to skip the test.
+> 
+> ```cmake
+> add_cmake_test(test1)
+> xadd_cmake_test(test2)
+> ```
+> Test `test2` will be skipped and the report like this will be logged:
+> 
+> ```log
+>     Start 1: test1
+> 1/2 Test #1: test1 ............................   Passed    0.00 sec
+>     Start 2: test2
+> 2/2 Test #2: test2 ............................***Skipped   0.00 sec
+>
+> 100% tests passed, 0 tests failed out of 2
+> 
+> Total Test time (real) =   0.00 sec
+> 
+> The following tests did not run:
+>       2 - test2 (Skipped)
+> ```
+
+
+
+---
+
+### Example project structure
+
+This is example project structure (only essential folders and files are presented):
+
+```
+<PROJECT_ROOT_DIR>
+├── CMakeLists.txt
+├── cmake
+│   └── CMakeUnit.cmake
+├── src
+│   └── module.cmake
+└── tests
+    ├── CMakeLists.txt
+    └── module
+        ├── CMakeLists.txt
+        ├── test1.cmake
+        └── test2.cmake
+```
+
+- `CMakeLists.txt` project cmake entrypoint
+- `cmake` folder with CMake modules
+- `src` folder with CMake code to test
+- `tests` folder withs tests
+
+
+### Setup
+
+1.  In CMakeLists.txt
+
+    - include CTest
+    - add to CMAKE_MODULE_PATH location of CMakeUnit module
+    - add to CMAKE_MODULE_PATH locations of source code to test
+
+    ```cmake
+    cmake_minimum_required(VERSION 3.30)
+    
+    project(my-project)
+    
+    if (PROJECT_IS_TOP_LEVEL)
+       include(CTest)
+       list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/src;${CMAKE_CURRENT_LIST_DIR}/cmake")
+       add_subdirectory(tests)
+    endif ()
+    ```
+
+2.  In tests/CMakeLists.txt
+
+    - add all test suites you need
+    - add test target
+
+    ```cmake
+    include(CMakeUnit)
+    add_subdirectory(module)
+    add_cmakeunit_target(tests)
+    ```
+
+3.  In tests/module/CMakeLists.txt
+
+    - add every test in test suite that you need
+
+    ```cmake
+    include(UTestHelpers)
+    add_cmake_test(test1)
+    add_cmake_test(test2)
+    ```
+
+### Run
+
+Assuming the setup as described above, there are required usual steps as to run any CMake target.
+
+```bash
+mkdir build
+cd build
+cmake ..
+make tests
+```
+
+---
 
 [cmake::add_custom_target]: https://cmake.org/cmake/help/latest/command/add_custom_target.html
 [cmake::add_test]: https://cmake.org/cmake/help/latest/command/add_test.html
