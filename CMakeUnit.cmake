@@ -85,6 +85,35 @@ function(CMakeUnit_check_comparison comparison)
         FATAL("Invalid comparison '${comparison}'")
     endif ()
 endfunction()
+
+function(CMakeUnit_get_function_mock_name var name)
+    set(${var} "MOCK_FUNCTION_${name}" PARENT_SCOPE)
+endfunction()
+
+function(CMakeUnit_get_function_mock var name)
+    CMakeUnit_get_function_mock_name(mockName ${name})
+    get_property(isMockDefined SOURCE ${CMAKE_CURRENT_LIST_FILE} PROPERTY ${mockName} DEFINED)
+    if (NOT isMockDefined)
+        FATAL("Function mock '${name}' is not defined")
+    endif ()
+    get_property(mockCalls SOURCE ${CMAKE_CURRENT_LIST_FILE} PROPERTY ${mockName})
+    set(${var} "${mockCalls}" PARENT_SCOPE)
+endfunction()
+
+function(CMakeUnit_get_function_call_args var name call)
+    if (call LESS_EQUAL 0)
+        FATAL("'call' should be greater than 0")
+    endif ()
+    CMakeUnit_get_function_mock(calls ${name})
+    list(LENGTH calls callsCount)
+    if (call GREATER callsCount)
+        FAIL("Mock function '${name}' has been called ${callsCount} times while at least ${call} was expected")
+        return()
+    endif ()
+    math(EXPR expectedCall "${call} - 1")
+    list(GET calls ${expectedCall} callArgs)
+    set(${var} "${callArgs}" PARENT_SCOPE)
+endfunction()
 # }}} CMakeUnit internal helpers
 
 
@@ -192,4 +221,33 @@ function(EXPECT_LIST_LENGTH variable comparison expected)
     list(LENGTH ${variable} actualLength)
     cmake_language(CALL "EXPECT_${comparison}" ${actualLength} ${expected})
 endfunction()
+
+function(EXPECT_CALL_TIMES name comparison expected)
+    CMakeUnit_check_comparison(${comparison})
+    CMakeUnit_get_function_mock(mockCalls ${name})
+    list(LENGTH mockCalls mockCallsCount)
+    cmake_language(CALL "EXPECT_${comparison}" ${mockCallsCount} ${expected})
+endfunction()
+
+function(EXPECT_CALL_WITH name call)
+    list(JOIN ARGN " " expectedArgs)
+    CMakeUnit_get_function_call_args(actualArgs ${name} ${call})
+    if (NOT expectedArgs STREQUAL actualArgs)
+        FAIL("When the '${name}' mock function was called, the arguments list (${actualArgs}) was given while (${expectedArgs}) was expected")
+    endif ()
+endfunction()
 # }}} Assertions
+
+
+# {{{ Mocks
+function(MOCK_FUNCTION name)
+    CMakeUnit_get_function_mock_name(mockName ${name})
+    define_property(SOURCE PROPERTY ${mockName})
+
+    function(${name})
+        CMakeUnit_get_function_mock_name(mockName ${CMAKE_CURRENT_FUNCTION})
+        list(JOIN ARGN " " callArgs)
+        set_property(SOURCE ${CMAKE_CURRENT_LIST_FILE} APPEND PROPERTY ${mockName} "${callArgs}")
+    endfunction()
+endfunction()
+# }}} Mocks
