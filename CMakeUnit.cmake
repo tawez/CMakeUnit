@@ -23,6 +23,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# {{{ Core functions
 function(add_cmake_test name path)
     set(options SKIP WILL_FAIL)
     set(oneValueArgs "")
@@ -74,6 +75,18 @@ macro(add_cmakeunit_target name)
         ${ARGN}
     )
 endmacro()
+# }}} Core functions
+
+
+# {{{ CMakeUnit internal helpers
+function(CMakeUnit_check_comparison comparison)
+    set(validComparison EQ NE LT LE GT GE)
+    if (NOT comparison IN_LIST validComparison)
+        FATAL("Invalid comparison '${comparison}'")
+    endif ()
+endfunction()
+# }}} CMakeUnit internal helpers
+
 
 # {{{ Assertions
 macro(FAIL)
@@ -172,5 +185,11 @@ function(EXPECT_GE value expected)
     if (NOT value GREATER_EQUAL expected)
         FAIL("'${value}' is expected to be greater than or equal to '${expected}'")
     endif ()
+endfunction()
+
+function(EXPECT_LIST_LENGTH variable comparison expected)
+    CMakeUnit_check_comparison(${comparison})
+    list(LENGTH ${variable} actualLength)
+    cmake_language(CALL "EXPECT_${comparison}" ${actualLength} ${expected})
 endfunction()
 # }}} Assertions
