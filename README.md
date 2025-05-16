@@ -1,10 +1,12 @@
 # CMakeUnit
 
 CMakeUnit is a small set of functions and macros useful when testing CMake code.
-There are two main scenarios how you can use CMakeUnit:
+There are three main scenarios how you can use CMakeUnit:
 
-1. TDD the code, functions or macro
+1. TDD the code, functions and macros
 2. Run part of the code in isolation
+3. Use `ASSERT_` checks in production code
+
 
 ## Project setup
 
@@ -88,54 +90,75 @@ tests.
 ## Assertions
 
 - `FATAL([text...])`  
-  Generates a fatal failure, which stops the execution of current test.
+  Generates fatal failure and aborts the current test.
 
 - `FAIL([text...])`  
-  Generates a failure, which allows the current test to continue running.
+  Generates nonfatal failure and allows the current test to continue running.
+
+
+The macros listed below come as a pair with an `EXPECT_` variant and an
+`ASSERT_` variant.  Upon failure, `EXPECT_` macros generate nonfatal failures
+and allow the current test to continue running, while `ASSERT_` macros
+generate fatal failures and abort the current test/code.
 
 - `EXPECT_TRUE(value)`  
+  `ASSERT_TRUE(value)`  
   Verifies that `value` is _true_.
 
 - `EXPECT_FALSE(value)`  
+  `ASSERT_FALSE(value)`  
   Verifies that `value` is _false_.
 
 - `EXPECT_DEFINED(variable)`  
+  `ASSERT_DEFINED(variable)`  
   Verifies that `variable` is defined.
 
 - `EXPECT_UNDEFINED(variable)`  
+  `ASSERT_UNDEFINED(variable)`  
   Verifies that `variable` is undefined.
 
 - `EXPECT_STREQ(value expected)`  
+  `ASSERT_STREQ(value expected)`  
   Verifies that the two strings `value` and `expected` have the same contents.
 
 - `EXPECT_NOT_STREQ(value expected)`  
+  `ASSERT_NOT_STREQ(value expected)`  
   Verifies that the two strings `value` and `expected` have different contents.
 
 - `EXPECT_MATCH(value pattern)`  
+  `ASSERT_MATCH(value pattern)`  
   Verifies that the `value` matches the `pattern`.
 
 - `EXPECT_NOT_MATCH(value pattern)`  
+  `ASSERT_NOT_MATCH(value pattern)`  
   Verifies that the `value` does not match the `pattern`.
 
 - `EXPECT_EQ(value expected)`  
+  `ASSERT_EQ(value expected)`  
   Verifies that `value == expected`.
 
 - `EXPECT_NE(value expected)`  
+  `ASSERT_NE(value expected)`  
   Verifies that `value != expected`.
 
 - `EXPECT_LT(value expected)`  
+  `ASSERT_LT(value expected)`  
   Verifies that `value < expected`.
 
 - `EXPECT_LE(value expected)`  
+  `ASSERT_LE(value expected)`  
   Verifies that `value <= expected`.
 
 - `EXPECT_GT(value expected)`  
+  `ASSERT_GT(value expected)`  
   Verifies that `value > expected`.
 
 - `EXPECT_GE(value expected)`  
+  `ASSERT_GE(value expected)`  
   Verifies that `value >= expected`.
 
 - `EXPECT_LIST_LENGTH(variable relation expected)`  
+  `ASSERT_LIST_LENGTH(variable relation expected)`  
   Verifies that length of a list denoted by the `variable` is in `relation` to
   `expected` value.
 
