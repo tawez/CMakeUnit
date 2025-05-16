@@ -165,6 +165,24 @@ generate fatal failures and abort the current test/code.
   `relation` is one of: `EQ`, `NE`, `LT`, `LE`, `GT`, `GE`
 
 
+## Mocks
+
+- `MOCK_FUNCTION(name)`  
+  Defines a mock function `name`.
+
+### Mock assertions
+
+- `EXPECT_CALL_TIMES(name relation expected)`  
+  Verifies that the number of calls of the `name` mock function is in `relation` 
+  to `expected` value.
+
+  `relation` is one of: `EQ`, `NE`, `LT`, `LE`, `GT`, `GE`
+ 
+- `EXPECT_CALL_WITH(name callNo [args...])`  
+  Verifies that `callNo` call of `name` mock function has been performed with 
+  given `args`.
+
+
 [cmake::add_custom_target]: https://cmake.org/cmake/help/latest/command/add_custom_target.html
 [cmake::CMAKE_CURRENT_SOURCE_DIR]: https://cmake.org/cmake/help/latest/variable/CMAKE_CURRENT_SOURCE_DIR.html
 [cmake::CMAKE_MODULE_PATH]: https://cmake.org/cmake/help/latest/variable/CMAKE_MODULE_PATH.html
