@@ -89,6 +89,35 @@ function(CMakeUnit_check_relation relation)
         FATAL("Invalid relation '${relation}'")
     endif ()
 endfunction()
+
+function(CMakeUnit_get_function_mock_name var name)
+    set(${var} "MOCK_FUNCTION_${name}" PARENT_SCOPE)
+endfunction()
+
+function(CMakeUnit_get_function_mock var name)
+    CMakeUnit_get_function_mock_name(mockName ${name})
+    get_property(isMockDefined SOURCE ${CMAKE_CURRENT_LIST_FILE} PROPERTY ${mockName} DEFINED)
+    if (NOT isMockDefined)
+        FATAL("Function mock '${name}' is not defined")
+    endif ()
+    get_property(mockCalls SOURCE ${CMAKE_CURRENT_LIST_FILE} PROPERTY ${mockName})
+    set(${var} "${mockCalls}" PARENT_SCOPE)
+endfunction()
+
+function(CMakeUnit_get_function_call_args var name callNo)
+    if (callNo LESS_EQUAL 0)
+        FATAL("'call' should be greater than 0")
+    endif ()
+    CMakeUnit_get_function_mock(calls ${name})
+    list(LENGTH calls callsCount)
+    if (callNo GREATER callsCount)
+        FAIL("Mock function '${name}' has been called ${callsCount} times while at least ${callNo} was expected")
+        return()
+    endif ()
+    math(EXPR expectedCall "${callNo} - 1")
+    list(GET calls ${expectedCall} callArgs)
+    set(${var} "${callArgs}" PARENT_SCOPE)
+endfunction()
 # }}} CMakeUnit internal helpers
 
 
@@ -197,3 +226,32 @@ function(EXPECT_LIST_LENGTH variable relation expected)
     cmake_language(CALL "EXPECT_${relation}" ${actualLength} ${expected})
 endfunction()
 # }}} Assertions
+
+
+# {{{ Mocks
+function(MOCK_FUNCTION name)
+    CMakeUnit_get_function_mock_name(mockName ${name})
+    define_property(SOURCE PROPERTY ${mockName})
+
+    function(${name})
+        CMakeUnit_get_function_mock_name(mockName ${CMAKE_CURRENT_FUNCTION})
+        list(JOIN ARGN " " callArgs)
+        set_property(SOURCE ${CMAKE_CURRENT_LIST_FILE} APPEND PROPERTY ${mockName} "${callArgs}")
+    endfunction()
+endfunction()
+
+function(EXPECT_CALL_TIMES name relation expected)
+    CMakeUnit_check_relation(${relation})
+    CMakeUnit_get_function_mock(mockCalls ${name})
+    list(LENGTH mockCalls mockCallsCount)
+    cmake_language(CALL "EXPECT_${relation}" ${mockCallsCount} ${expected})
+endfunction()
+
+function(EXPECT_CALL_WITH name callNo)
+    list(JOIN ARGN " " expectedArgs)
+    CMakeUnit_get_function_call_args(actualArgs ${name} ${callNo})
+    if (NOT expectedArgs STREQUAL actualArgs)
+        FAIL("When the '${name}' mock function was called, the arguments list (${actualArgs}) was given while (${expectedArgs}) was expected")
+    endif ()
+endfunction()
+# }}} Mocks
