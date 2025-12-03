@@ -164,6 +164,10 @@ generate fatal failures and abort the current test/code.
 
   `relation` is one of: `EQ`, `NE`, `LT`, `LE`, `GT`, `GE`
 
+- `EXPECT_LIST_EQ(<value> [<item>*])`  
+  `ASSERT_LIST_EQ(<value> [<item>*])`
+  Verifies if value is equal to the list of items.
+
 
 [cmake::add_custom_target]: https://cmake.org/cmake/help/latest/command/add_custom_target.html
 [cmake::CMAKE_CURRENT_SOURCE_DIR]: https://cmake.org/cmake/help/latest/variable/CMAKE_CURRENT_SOURCE_DIR.html
