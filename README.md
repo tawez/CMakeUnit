@@ -164,13 +164,28 @@ generate fatal failures and abort the current test/code.
 
   `relation` is one of: `EQ`, `NE`, `LT`, `LE`, `GT`, `GE`
 
-- `EXPECT_LIST_EQ(<value> [<item>*])`  
-  `ASSERT_LIST_EQ(<value> [<item>*])`  
+- `EXPECT_LIST_EQ(<value> [<item>...])`  
+  `ASSERT_LIST_EQ(<value> [<item>...])`  
   Verifies if `value` is equal to the list of `items`.
 
-- `EXPECT_LIST_CONTAINS(<value> [<item>*])`  
-  `ASSERT_LIST_CONTAINS(<value> [<item>*])`  
+- `EXPECT_LIST_CONTAINS(<value> [<item>...])`  
+  `ASSERT_LIST_CONTAINS(<value> [<item>...])`  
   Verifies if `value` contains given `item(s)`.
+
+
+## Mocks
+
+- `MOCK_FUNCTION(name)`  
+  Defines a mock function `name`.
+
+### Mock assertions
+
+- `EXPECT_CALL_TIMES(name expected)`  
+  Verifies that the number of calls of the `name` mock function equals to `expected`.
+
+- `EXPECT_CALL_WITH(name nth [<arg>...])`  
+  Verifies that `nth` call of `name` mock function has been performed with 
+  given `arg(s)`.
 
 
 [cmake::add_custom_target]: https://cmake.org/cmake/help/latest/command/add_custom_target.html
