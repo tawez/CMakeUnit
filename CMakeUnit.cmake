@@ -82,16 +82,6 @@ endmacro()
 # }}} Core functions
 
 
-# {{{ CMakeUnit internal helpers
-function(CMakeUnit_check_relation relation)
-    set(validRelation EQ NE LT LE GT GE)
-    if (NOT relation IN_LIST validRelation)
-        FATAL("Invalid relation '${relation}'")
-    endif ()
-endfunction()
-# }}} CMakeUnit internal helpers
-
-
 # {{{ Assertions
 macro(FATAL)
     message(FATAL_ERROR "${ARGN}")
@@ -188,7 +178,11 @@ function(ASSERT_GE value expected)
 endfunction()
 
 function(ASSERT_LIST_LENGTH variable relation expected)
-    CMakeUnit_check_comparison(${relation})
+    set(valid_relation_ EQ NE LT LE GT GE)
+    if (NOT relation IN_LIST valid_relation_)
+        FATAL("Invalid relation '${relation}'")
+    endif ()
+
     list(LENGTH ${variable} actualLength)
     cmake_language(CALL "ASSERT_${relation}" ${actualLength} ${expected})
 endfunction()
@@ -306,7 +300,11 @@ function(EXPECT_GE value expected)
 endfunction()
 
 function(EXPECT_LIST_LENGTH variable relation expected)
-    CMakeUnit_check_relation(${relation})
+    set(valid_relation_ EQ NE LT LE GT GE)
+    if (NOT relation IN_LIST valid_relation_)
+        FATAL("Invalid relation '${relation}'")
+    endif ()
+
     list(LENGTH ${variable} actualLength)
     cmake_language(CALL "EXPECT_${relation}" ${actualLength} ${expected})
 endfunction()
