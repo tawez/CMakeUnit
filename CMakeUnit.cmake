@@ -32,20 +32,20 @@ function(add_cmake_test name path)
     set(options SKIP WILL_FAIL)
     set(oneValueArgs "")
     set(multiValueArgs OPTIONS)
-    cmake_parse_arguments(test "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    cmake_parse_arguments(arg "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    get_filename_component(testPath "${path}" ABSOLUTE)
-    if (IS_DIRECTORY "${testPath}")
+    get_filename_component(test_path_ "${path}" ABSOLUTE)
+    if (IS_DIRECTORY "${test_path_}")
         cmake_path(APPEND path "CMakeLists.txt")
     endif ()
-    get_filename_component(testPath "${path}" ABSOLUTE)
-    if (NOT EXISTS "${testPath}")
+    get_filename_component(test_path_ "${path}" ABSOLUTE)
+    if (NOT EXISTS "${test_path_}")
         message(FATAL_ERROR "${path} not found")
-    elseif (IS_DIRECTORY "${testPath}")
+    elseif (IS_DIRECTORY "${test_path_}")
         message(FATAL_ERROR "${path} is not a file")
     endif ()
 
-    if (${test_SKIP})
+    if (${arg_SKIP})
         add_test(
             NAME "${name}"
             COMMAND ${CMAKE_COMMAND} -E echo "Skip '${name}' test"
@@ -63,11 +63,11 @@ function(add_cmake_test name path)
     add_test(
         NAME "${name}"
         COMMAND ${CMAKE_COMMAND}
-        ${test_OPTIONS}
+        ${arg_OPTIONS}
         "-DCMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}"
         -P "${CMAKE_CURRENT_BINARY_DIR}/${path}"
     )
-    if (${test_WILL_FAIL})
+    if (${arg_WILL_FAIL})
         set_property(TEST "${name}" PROPERTY WILL_FAIL true)
     endif ()
 endfunction()
@@ -183,8 +183,8 @@ function(ASSERT_LIST_LENGTH variable relation expected)
         FATAL("Invalid relation '${relation}'")
     endif ()
 
-    list(LENGTH ${variable} actualLength)
-    cmake_language(CALL "ASSERT_${relation}" ${actualLength} ${expected})
+    list(LENGTH ${variable} actual_length_)
+    cmake_language(CALL "ASSERT_${relation}" ${actual_length_} ${expected})
 endfunction()
 
 function(ASSERT_LIST_EQ variable)
@@ -194,7 +194,7 @@ function(ASSERT_LIST_EQ variable)
 endfunction()
 
 function(ASSERT_LIST_CONTAINS value)
-    set(not_found_)
+    set(not_found_ "")
     foreach(item_ IN LISTS ARGN)
         if (NOT item_ IN_LIST value)
             list(APPEND not_found_ ${item_})
@@ -305,8 +305,8 @@ function(EXPECT_LIST_LENGTH variable relation expected)
         FATAL("Invalid relation '${relation}'")
     endif ()
 
-    list(LENGTH ${variable} actualLength)
-    cmake_language(CALL "EXPECT_${relation}" ${actualLength} ${expected})
+    list(LENGTH ${variable} actual_length_)
+    cmake_language(CALL "EXPECT_${relation}" ${actual_length_} ${expected})
 endfunction()
 
 function(EXPECT_LIST_EQ value)
@@ -316,7 +316,7 @@ function(EXPECT_LIST_EQ value)
 endfunction()
 
 function(EXPECT_LIST_CONTAINS value)
-    set(not_found_)
+    set(not_found_ "")
     foreach(item_ IN LISTS ARGN)
         if (NOT item_ IN_LIST value)
             list(APPEND not_found_ ${item_})
@@ -351,7 +351,7 @@ function(EXPECT_CALL_TIMES name expected)
     endif ()
 
     if (expected LESS 0)
-        FATAL("'expected' should be greater or equal 0")
+        FATAL("'expected' is ${expected} but should be greater or equal 0")
     endif ()
 
     get_property(call_log_ GLOBAL PROPERTY "MOCK_FUNCTION_${name}")
@@ -371,7 +371,7 @@ function(EXPECT_CALL_WITH name nth)
     endif ()
 
     if (nth LESS 1)
-        FATAL("'nth' should be greater than 0")
+        FATAL("'nth' is ${nth} but should be greater than 0")
     endif ()
 
     get_property(call_log_ GLOBAL PROPERTY "MOCK_FUNCTION_${name}")
